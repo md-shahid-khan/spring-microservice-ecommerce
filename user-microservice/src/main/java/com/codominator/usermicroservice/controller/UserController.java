@@ -1,49 +1,56 @@
 package com.codominator.usermicroservice.controller;
 
-
-import com.codominator.usermicroservice.entity.User;
+import com.codominator.usermicroservice.dto.request.UserRequestDto;
+import com.codominator.usermicroservice.dto.response.UserResponseDto;
 import com.codominator.usermicroservice.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
+
     private final UserService userService;
-    private List<User> users = new ArrayList<User>();
 
-    @GetMapping("/get-all")
-    public ResponseEntity<List<User>> getUser(){
-        return ResponseEntity.ok().body(userService.getUser());
+    @GetMapping("/health")
+    public ResponseEntity<String> health() {
+        return ResponseEntity.ok("OK");
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<User> getUser(@RequestBody User user){
-      return ResponseEntity.ok().body(userService.createUser(user));
+    @GetMapping
+    public ResponseEntity<List<UserResponseDto>> getAllUsers() {
+        return ResponseEntity.ok().body(userService.getAllUsers());
     }
 
-    @PostMapping("/find/{id}")
-    public ResponseEntity<User> findUserById(@PathVariable Long id){
-        Optional<User> userById = userService.findUserById(id);
-        return userById.map(user -> ResponseEntity.ok().body(user)).orElseGet(() -> ResponseEntity.notFound().build());
+    @PostMapping
+    public ResponseEntity<UserResponseDto> createUser(@RequestBody UserRequestDto userRequestDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(userRequestDto));
     }
-    @PutMapping("/update/{id}") // Use @PutMapping for updates
-    public ResponseEntity<User> updateUser(@RequestBody User user, @PathVariable Long id) {
-        return userService.updateUser(id, user)
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponseDto> findUserById(@PathVariable Long id) {
+        UserResponseDto foundUser = userService.findUserById(id);
+        if (foundUser == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok().body(foundUser);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UserResponseDto> updateUser(@RequestBody UserRequestDto userRequestDto, @PathVariable Long id) {
+        return userService.updateUser(id, userRequestDto)
                 .map(updatedUser -> ResponseEntity.ok().body(updatedUser))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
-    @PostMapping("/delete/{id}")
+
+    @DeleteMapping("/{id}") // 🔴 FIX: This must be a DELETE mapping, not POST
     public ResponseEntity<String> deleteUserById(@PathVariable Long id) {
         userService.deleteUser(id);
-        return new ResponseEntity<>("User has been deleted", HttpStatus.OK);
+        return ResponseEntity.ok("User has been deleted");
     }
-
 }
