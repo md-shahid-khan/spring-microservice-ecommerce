@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final UserMapper userMapper; // Injected via Spring instead of Mappers.getMapper()
+    private final UserMapper userMapper;
 
     public List<UserResponseDto> getAllUsers() {
         return userRepository.findAll()
@@ -29,7 +29,7 @@ public class UserService {
     public UserResponseDto createUser(UserRequestDto userRequestDto) {
         User user = userMapper.mapUserRequestToUser(userRequestDto);
 
-        // 🔴 FIX: You forgot to actually save the user to the database!
+
         User savedUser = userRepository.save(user);
 
         return userMapper.mapUserTouserResponseDto(savedUser);
@@ -38,7 +38,7 @@ public class UserService {
     public UserResponseDto findUserById(Long id) {
         return userRepository.findById(id)
                 .map(userMapper::mapUserTouserResponseDto)
-                .orElse(null);
+                .orElseThrow(()-> new IllegalArgumentException("User not found with id " + id));
     }
 
     public Optional<UserResponseDto> updateUser(Long id, UserRequestDto userRequestDto) {
