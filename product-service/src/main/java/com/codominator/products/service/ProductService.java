@@ -11,7 +11,9 @@ import lombok.RequiredArgsConstructor;
 import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 
@@ -34,5 +36,20 @@ public class ProductService {
             return productMapper.mapToProductResponseDto(productById.get());
         }
         throw new IllegalArgumentException("Product not found with id " + id);
+    }
+
+    public List<ProductResponseDto> findAllProducts() {
+        List<Product> products = productRepository.findAll();
+       return products.stream().map(product -> productMapper.mapToProductResponseDto(product)).collect(Collectors.toList());
+    }
+
+    public void deleteProductById(Long id) {
+        productRepository.deleteById(id);
+    }
+
+    public List<ProductResponseDto> searchProduct(String keywords) {
+        return productRepository.searchProduct(keywords)
+                .stream()
+                .map(product -> productMapper.mapToProductResponseDto(product)).collect(Collectors.toList());
     }
 }
