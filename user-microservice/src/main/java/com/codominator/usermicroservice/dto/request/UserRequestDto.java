@@ -11,7 +11,5 @@ public class UserRequestDto {
     private String phone;
     private UserRole userRole;
 
-    // 🔴 FIX: This was previously pointing to the Entity class.
-    // It must point to your AddressDto class.
     private AddressDto address;
 }

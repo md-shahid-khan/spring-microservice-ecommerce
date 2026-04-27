@@ -7,15 +7,19 @@ import com.codominator.products.entity.Product;
 import com.codominator.products.repository.CartItemRepository;
 import com.codominator.products.repository.ProductRepository;
 import com.codominator.products.restCalls.UserClient;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class CartService {
 private final ProductRepository productRepository;
 private final CartItemRepository cartItemRepository;
@@ -59,5 +63,29 @@ private final UserClient userClient;
 
         }
         return true;
+    }
+
+
+    public boolean removeFromCart(String userId, String productId){
+        UserDto userById = userClient.getUserById(userId);
+        if(userById==null){
+            return false;
+        }
+        Optional<Product> findProductById = productRepository.findById(Long.valueOf(productId));
+        if(findProductById.isEmpty()){
+            System.out.println("product not found");
+            return false;
+        }
+        cartItemRepository.deleteByUserIdAndProduct(userId, findProductById.get());
+        return true;
+    }
+
+    public List<?> getAllCartItems(String userId){
+        UserDto userById = userClient.getUserById(userId);
+        if(userById==null){
+            return new ArrayList<>();
+        }
+       List<CartItem> cartItems = cartItemRepository.findByUserId(userId);
+       return cartItems;
     }
 }
